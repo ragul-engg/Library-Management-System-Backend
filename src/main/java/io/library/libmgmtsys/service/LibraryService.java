@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.library.libmgmtsys.model.Book;
+import io.library.libmgmtsys.model.Issue;
 import io.library.libmgmtsys.model.LoginUser;
 import io.library.libmgmtsys.model.User;
 import io.library.libmgmtsys.repository.BookMgmtRepo;
+import io.library.libmgmtsys.repository.IssueMgmtRepo;
 import io.library.libmgmtsys.repository.UserMgmtRepo;
 
 @Service
@@ -20,6 +22,8 @@ public class LibraryService {
     UserMgmtRepo libraryMgmtRepo;
     @Autowired
     BookMgmtRepo bookMgmtRepo;
+    @Autowired
+    IssueMgmtRepo issueMgmtRepo;
     // @Autowired
     // BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -65,10 +69,11 @@ public class LibraryService {
     public Map<String, String> authUser(LoginUser user) {
         Optional<User> us = libraryMgmtRepo.findByEmail(user.getEmail());
         Map<String, String> mp = new HashMap<>();
-        mp.put("msg", "student");
+        mp.put("msg", "UNAUTHORIZED");
         if (us.isPresent()) {
             if (us.get().getPassword().equals(user.getPassword())) {
-                mp.put("msg", "admin");
+                mp.put("msg", us.get().getRole().name());
+                mp.put("userId", us.get().getUserId().toString());
                 return mp;
             }
         }
@@ -81,5 +86,24 @@ public class LibraryService {
 
     public List<Book> fetchBooksByName(String name) {
         return bookMgmtRepo.findByBookNameContains(name);
+    }
+
+    public Issue lendBook(Issue issue) {
+        Optional<Issue> issued = issueMgmtRepo.findByUserIdAndBookId(issue.getUserId(), issue.getBookId());
+        if (!issued.isPresent()) {
+            return issueMgmtRepo.save(issue);
+        }
+        return issued.get();
+    }
+
+    public void returnBook(Issue issue) {
+        Optional<Issue> issued = issueMgmtRepo.findByUserIdAndBookId(issue.getUserId(), issue.getBookId());
+        if (issued.isPresent()) {
+            issueMgmtRepo.delete(issued.get());
+        }
+    }
+
+    public List<Issue> getLendBooks(long userId) {
+        return issueMgmtRepo.findByUserId(userId);
     }
 }
