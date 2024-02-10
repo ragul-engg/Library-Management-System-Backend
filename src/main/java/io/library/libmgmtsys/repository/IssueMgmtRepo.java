@@ -11,4 +11,6 @@ public interface IssueMgmtRepo extends JpaRepository<Issue, Long> {
     List<Issue> findByUserId(long userId);
 
     Optional<Issue> findByUserIdAndBookId(long userId, long bookId);
+    
+    long deleteByBookId(long bookId);
 }

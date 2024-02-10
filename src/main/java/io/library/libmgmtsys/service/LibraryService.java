@@ -56,6 +56,7 @@ public class LibraryService {
     public boolean deleteBook(long id) {
         try {
             bookMgmtRepo.deleteById(id);
+            issueMgmtRepo.deleteByBookId(id);
         } catch (Exception e) {
             return false;
         }
@@ -105,5 +106,9 @@ public class LibraryService {
 
     public List<Issue> getLendBooks(long userId) {
         return issueMgmtRepo.findByUserId(userId);
+    }
+
+    public Book getBook(long bookId) {
+        return bookMgmtRepo.findById(bookId).get();
     }
 }
